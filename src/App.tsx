@@ -5,15 +5,13 @@ import MobileApp from './components/MobileApp';
 import WebPortal from './components/WebPortal';
 import NetworkLedger from './components/NetworkLedger';
 import ProtocolFlow from './components/ProtocolFlow';
-import { 
-  LayoutDashboard, Smartphone, PlusCircle, ShieldCheck, Activity, 
-  BookOpen, Menu, X, Wallet, ArrowUpRight, HelpCircle, Scale,
-  Radio, Shield, Award, Landmark, Database, UserCheck, ChevronRight, CheckCircle2,
-  Coins, RefreshCw
+import {
+  LayoutDashboard, Smartphone, Activity, BookOpen, ArrowUpRight, Scale,
+  Radio, Award, UserCheck, ChevronRight, Coins, RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type ViewType = 'dashboard' | 'member-portal' | 'create-orbit' | 'admin-hub' | 'verifier' | 'ledger' | 'protocol';
+type ViewType = 'dashboard' | 'member-portal' | 'admin-portal' | 'ledger' | 'protocol';
 
 export default function App() {
   const [orbits, setOrbits] = useState<OrbitGroup[]>(INITIAL_ORBITS);
@@ -21,8 +19,7 @@ export default function App() {
   const [incomingVerifierLink, setIncomingVerifierLink] = useState<string>('');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  
+
   // Initialize with some realistic system startup logs
   const [logs, setLogs] = useState<LogEvent[]>([
     {
@@ -73,7 +70,7 @@ export default function App() {
 
   const handleNavigateToWebVerifier = (proofLink: string) => {
     setIncomingVerifierLink(proofLink);
-    setActiveView('verifier');
+    setActiveView('admin-portal');
   };
 
   const isLight = theme === 'light';
@@ -101,12 +98,15 @@ export default function App() {
     new Set(orbits.flatMap(o => o.members.filter(m => m.status === 'active').map(m => m.id)))
   ).length;
 
+  // Consolidated from 7 items to 5: "Deploy Smart Contracts", "Admin Control
+  // Hub" and "ZK Reputation Verifier" were 3 separate top-level nav entries
+  // that all rendered the same WebPortal component (just with a different
+  // defaultTab) — WebPortal already has its own create/admin/verifier tab
+  // switcher, so those 3 collapse into one "Admin Portal" entry.
   const sidebarItems = [
     { id: 'dashboard', label: 'Overview Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'member-portal', label: 'Member Portal App', icon: <Smartphone className="w-4 h-4" /> },
-    { id: 'create-orbit', label: 'Deploy Smart Contracts', icon: <PlusCircle className="w-4 h-4" /> },
-    { id: 'admin-hub', label: 'Admin Control Hub', icon: <Scale className="w-4 h-4" /> },
-    { id: 'verifier', label: 'ZK Reputation Verifier', icon: <ShieldCheck className="w-4 h-4" /> },
+    { id: 'admin-portal', label: 'Admin Portal', icon: <Scale className="w-4 h-4" /> },
     { id: 'ledger', label: 'Stellar Ledger Monitor', icon: <Activity className="w-4 h-4" /> },
     { id: 'protocol', label: 'Protocol Flow Guide', icon: <BookOpen className="w-4 h-4" /> },
   ];
@@ -222,120 +222,48 @@ export default function App() {
         </div>
       </aside>
 
-      {/* --- MOBILE TOP NAVIGATION --- */}
+      {/* --- MOBILE TOP BAR (branding + theme only — navigation lives in the
+          bottom tab bar below, not hidden behind a drawer) --- */}
       <div className={`xl:hidden fixed top-0 left-0 right-0 h-16 border-b z-30 flex items-center justify-between px-4 select-none backdrop-blur-md transition-colors duration-300 ${
         isLight ? 'bg-white/95 border-zinc-200 text-zinc-800 shadow-sm' : 'bg-[#09090A]/95 border-white/10 text-[#E0E0E0]'
       }`}>
-        <div className="flex items-center gap-2.5">
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className={`p-2 rounded-xl border transition-all ${isLight ? 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
-          >
-            <Menu className="w-4.5 h-4.5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <RefreshCw className="w-4.5 h-4.5 text-orange-500 animate-spin-slow" />
-            <span className="text-sm font-serif italic tracking-widest font-bold">ORBIT</span>
-            <span className="text-[8px] font-mono text-orange-400 border border-orange-500/25 px-1 rounded-full uppercase">v1</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-4.5 h-4.5 text-orange-500 animate-spin-slow" />
+          <span className="text-sm font-serif italic tracking-widest font-bold">ORBIT</span>
+          <span className="text-[8px] font-mono text-orange-400 border border-orange-500/25 px-1 rounded-full uppercase">v1</span>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <button 
-            onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-            className={`p-1.5 rounded-lg border transition-all ${isLight ? 'border-zinc-200' : 'border-white/10'}`}
-          >
-            {isLight ? '☾' : '☀'}
-          </button>
-          <div className={`px-2 py-1 rounded-full border flex items-center gap-1.5 text-[9px] font-mono font-bold ${isLight ? 'bg-zinc-100' : 'bg-white/5'}`}>
-            <span className="w-1 h-1 rounded-full bg-emerald-500" />
-            GD7R...ZPL
-          </div>
-        </div>
+        <button
+          onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+          className={`p-1.5 rounded-lg border transition-all ${isLight ? 'border-zinc-200' : 'border-white/10'}`}
+        >
+          {isLight ? '☾' : '☀'}
+        </button>
       </div>
 
-      {/* --- MOBILE NAVIGATION DRAWER --- */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black z-40 xl:hidden"
-            />
-            {/* Drawer */}
-            <motion.div 
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className={`fixed top-0 bottom-0 left-0 w-80 z-50 p-5 flex flex-col xl:hidden transition-colors duration-300 ${
-                isLight ? 'bg-white text-zinc-850' : 'bg-[#0A0A0B] text-white border-r border-white/10'
+      {/* --- MOBILE BOTTOM TAB BAR --- */}
+      <nav className={`xl:hidden fixed bottom-0 left-0 right-0 h-16 border-t z-30 grid grid-cols-5 transition-colors duration-300 ${
+        isLight ? 'bg-white/95 border-zinc-200' : 'bg-[#09090A]/95 border-white/10'
+      }`}>
+        {sidebarItems.map((item) => {
+          const isActive = activeView === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveView(item.id as ViewType)}
+              className={`flex flex-col items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wide ${
+                isActive ? 'text-orange-500' : (isLight ? 'text-zinc-400' : 'text-white/40')
               }`}
             >
-              <div className="flex items-center justify-between pb-5 border-b mb-5 border-dashed border-zinc-200 dark:border-white/5">
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="w-5 h-5 text-orange-500 animate-spin-slow" />
-                  <span className="text-base font-serif italic tracking-widest">ORBIT MONITOR</span>
-                </div>
-                <button 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`p-1.5 rounded-xl border ${isLight ? 'border-zinc-200' : 'border-white/10 bg-white/5'}`}
-                >
-                  <X className="w-4.5 h-4.5" />
-                </button>
-              </div>
-
-              <div className="space-y-1.5 flex-1 overflow-y-auto">
-                {sidebarItems.map((item) => {
-                  const isActive = activeView === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setActiveView(item.id as ViewType);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-150 text-left border ${
-                        isActive 
-                          ? (isLight ? 'bg-zinc-900 text-white' : 'bg-white text-black')
-                          : (isLight ? 'hover:bg-zinc-100 border-transparent text-zinc-600' : 'hover:bg-white/5 border-transparent text-white/60')
-                      }`}
-                    >
-                      <div className={isActive ? (isLight ? 'text-white' : 'text-black') : 'text-orange-500'}>
-                        {item.icon}
-                      </div>
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="pt-4 border-t border-dashed border-zinc-200 dark:border-white/5 space-y-3 text-left">
-                <div className="text-[10px] text-zinc-400 dark:text-white/30 font-semibold font-mono">
-                  SYSTEM STATUS
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
-                  <div className={`p-2 rounded-lg border flex flex-col gap-0.5 ${isLight ? 'bg-zinc-50' : 'bg-white/5'}`}>
-                    <span className="text-zinc-400">HORIZON RPC</span>
-                    <span className="text-emerald-500 font-bold">ONLINE</span>
-                  </div>
-                  <div className={`p-2 rounded-lg border flex flex-col gap-0.5 ${isLight ? 'bg-zinc-50' : 'bg-white/5'}`}>
-                    <span className="text-zinc-400">INDEXER sync</span>
-                    <span className="text-emerald-500 font-bold">SYNCED</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              {item.icon}
+              <span className="leading-none text-center px-0.5">{item.label.split(' ')[0]}</span>
+            </button>
+          );
+        })}
+      </nav>
 
       {/* --- MAIN PANEL WORKSPACE --- */}
-      <main className="flex-1 flex flex-col min-w-0 xl:p-8 pt-20 pb-12 px-4 relative z-10 overflow-y-auto">
+      <main className="flex-1 flex flex-col min-w-0 xl:p-8 pt-20 pb-24 xl:pb-12 px-4 relative z-10 overflow-y-auto">
         {/* No max-w cap, no mx-auto: let content fill the space next to the
             sidebar instead of floating in a centered column with growing
             gutters on wide viewports. */}
@@ -672,16 +600,16 @@ export default function App() {
               </motion.div>
             )}
 
-            {/* 3. VIEW: DEPLOY SMART CONTRACTS */}
-            {activeView === 'create-orbit' && (
+            {/* 3. VIEW: ADMIN PORTAL (create / admin / verifier — WebPortal's own tabs) */}
+            {activeView === 'admin-portal' && (
               <motion.div
-                key="create-orbit"
+                key="admin-portal"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 className="w-full"
               >
-                <WebPortal 
+                <WebPortal
                   orbits={orbits}
                   setOrbits={setOrbits}
                   addLog={addLog}
@@ -689,48 +617,6 @@ export default function App() {
                   clearIncomingVerifierLink={() => setIncomingVerifierLink('')}
                   theme={theme}
                   defaultTab="create"
-                />
-              </motion.div>
-            )}
-
-            {/* 4. VIEW: ADMIN CONTROL HUB */}
-            {activeView === 'admin-hub' && (
-              <motion.div
-                key="admin-hub"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="w-full"
-              >
-                <WebPortal 
-                  orbits={orbits}
-                  setOrbits={setOrbits}
-                  addLog={addLog}
-                  incomingVerifierLink={incomingVerifierLink}
-                  clearIncomingVerifierLink={() => setIncomingVerifierLink('')}
-                  theme={theme}
-                  defaultTab="admin"
-                />
-              </motion.div>
-            )}
-
-            {/* 5. VIEW: ZK CREDIT VERIFIER */}
-            {activeView === 'verifier' && (
-              <motion.div
-                key="verifier"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="w-full"
-              >
-                <WebPortal 
-                  orbits={orbits}
-                  setOrbits={setOrbits}
-                  addLog={addLog}
-                  incomingVerifierLink={incomingVerifierLink}
-                  clearIncomingVerifierLink={() => setIncomingVerifierLink('')}
-                  theme={theme}
-                  defaultTab="verifier"
                 />
               </motion.div>
             )}

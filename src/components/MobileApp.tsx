@@ -504,8 +504,12 @@ export default function MobileApp({
 
   const isLight = theme === 'light';
 
+  // Fixed height + internal scroll makes sense at lg+, where this sits next
+  // to a side panel styled like a phone-mockup card. On an actual mobile
+  // viewport that's a scroll-within-scroll box trapping most of the app's
+  // real interactions — let it flow with the page instead (lg:h-[640px]).
   return (
-    <div id="member-app" className={`border rounded-3xl p-5 shadow-2xl flex flex-col h-[640px] transition-colors duration-300 w-full relative overflow-hidden ${
+    <div id="member-app" className={`border rounded-3xl p-5 shadow-2xl flex flex-col lg:h-[640px] transition-colors duration-300 w-full relative overflow-hidden ${
       isLight ? 'bg-white border-zinc-200 text-zinc-800' : 'bg-[#0A0A0A] border-white/10 text-[#E0E0E0]'
     }`}>
       {/* Header section of the Member App (replacing notch/status bar with a real web title) */}

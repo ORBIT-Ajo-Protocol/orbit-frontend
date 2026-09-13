@@ -285,8 +285,10 @@ export default function WebPortal({
 
   const isLight = theme === 'light';
 
+  // See MobileApp.tsx for why this is lg:h-[640px] rather than a fixed
+  // height on all viewports.
   return (
-    <div id="web-portal" className={`border rounded-3xl p-5 shadow-2xl flex flex-col h-[640px] transition-colors duration-300 ${
+    <div id="web-portal" className={`border rounded-3xl p-5 shadow-2xl flex flex-col lg:h-[640px] transition-colors duration-300 ${
       isLight ? 'bg-white border-zinc-200 text-zinc-800' : 'bg-[#0A0A0A] border-white/10 text-[#E0E0E0]'
     }`}>
       {/* Tab Menu Header */}
