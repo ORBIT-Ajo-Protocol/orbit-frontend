@@ -1,5 +1,14 @@
 import { OrbitGroup, Member, UserWallet } from './types';
 
+// Live on Stellar testnet — see orbit-contracts README for how these were
+// deployed. Inspect any of them directly:
+// stellar contract invoke --id <address> --source <identity> --network testnet -- get_state
+export const ORBIT_FACTORY_ADDRESS = 'CA5BMLNRG6OU7U6ZVPO4MUDHG5EHAGGMV3QTGQL4NS2IW35RKITLFLZK';
+export const ORBIT_CONTRACT_WASM_HASH = 'e35ce9e15f12bf0118af9276eae307b1662327664722fbc3391819394775fb46';
+
+export const stellarExpertContractUrl = (contractId: string) =>
+  `https://stellar.expert/explorer/testnet/contract/${contractId}`;
+
 export const INITIAL_MEMBERS: Member[] = [
   {
     id: 'user_efe',
@@ -62,6 +71,7 @@ export const INITIAL_ORBITS: OrbitGroup[] = [
   {
     id: 'orbit_lagos_solar',
     name: 'Lagos Solar Orbit',
+    contractAddress: 'CBZGTZNEB74FDVGEHKPCEROEN6QGD5NYNG7PLYWMHHF4OD24X6CHXV7K',
     contributionAmount: 50, // USDC ($50 ≈ 75,000 NGN)
     frequency: 'Weekly',
     payoutOrder: 'fixed',
@@ -83,6 +93,7 @@ export const INITIAL_ORBITS: OrbitGroup[] = [
   {
     id: 'orbit_abuja_galaxy',
     name: 'Abuja Galaxy Orbit',
+    contractAddress: 'CAT5CLZ6QN3OBWJ6SPRHXCSXWFXJ4V2AEMWBDT3MD4YYQPLSIOYQSGVB',
     contributionAmount: 150, // USDC
     frequency: 'Monthly',
     payoutOrder: 'random',

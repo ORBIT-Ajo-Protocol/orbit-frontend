@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { INITIAL_ORBITS, INITIAL_USER_WALLET } from './data';
+import { INITIAL_ORBITS, INITIAL_USER_WALLET, ORBIT_FACTORY_ADDRESS, stellarExpertContractUrl } from './data';
 import { OrbitGroup, UserWallet, LogEvent } from './types';
 import MobileApp from './components/MobileApp';
 import WebPortal from './components/WebPortal';
@@ -77,6 +77,17 @@ export default function App() {
   };
 
   const isLight = theme === 'light';
+
+  // Shared entrance animation for card grids: parent staggers children in
+  // rather than the whole grid popping in flat and static.
+  const staggerContainer = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.06 } },
+  };
+  const staggerItem = {
+    hidden: { opacity: 0, y: 14, scale: 0.98 },
+    show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', damping: 22, stiffness: 220 } },
+  };
 
   // Calculate dynamically for dashboard metrics
   const totalValueLocked = orbits.reduce((sum, o) => {
@@ -212,9 +223,9 @@ export default function App() {
       </aside>
 
       {/* --- MOBILE TOP NAVIGATION --- */}
-      <div className="xl:hidden fixed top-0 left-0 right-0 h-16 border-b z-30 flex items-center justify-between px-4 select-none backdrop-blur-md transition-colors duration-300 ${
+      <div className={`xl:hidden fixed top-0 left-0 right-0 h-16 border-b z-30 flex items-center justify-between px-4 select-none backdrop-blur-md transition-colors duration-300 ${
         isLight ? 'bg-white/95 border-zinc-200 text-zinc-800 shadow-sm' : 'bg-[#09090A]/95 border-white/10 text-[#E0E0E0]'
-      }">
+      }`}>
         <div className="flex items-center gap-2.5">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
@@ -325,7 +336,10 @@ export default function App() {
 
       {/* --- MAIN PANEL WORKSPACE --- */}
       <main className="flex-1 flex flex-col min-w-0 xl:p-8 pt-20 pb-12 px-4 relative z-10 overflow-y-auto">
-        <div className="max-w-6xl w-full mx-auto flex flex-col gap-6">
+        {/* No max-w cap, no mx-auto: let content fill the space next to the
+            sidebar instead of floating in a centered column with growing
+            gutters on wide viewports. */}
+        <div className="w-full flex flex-col gap-6">
 
           <AnimatePresence mode="wait">
             
@@ -372,10 +386,60 @@ export default function App() {
                   <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
                 </div>
 
+                {/* One-line explainer + real testnet contract links. Full concept
+                    explanation lives on the Protocol Flow Guide page — this is
+                    just enough to orient a first-time visitor, not a wall of text. */}
+                <div className={`rounded-2xl px-5 py-4 border flex flex-col md:flex-row md:items-center gap-3 md:gap-6 transition-all duration-300 ${
+                  isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'
+                }`}>
+                  <p className={`text-xs leading-relaxed flex-1 min-w-0 ${isLight ? 'text-zinc-600' : 'text-white/60'}`}>
+                    <strong className={isLight ? 'text-zinc-900' : 'text-white'}>ORBIT</strong> is <strong>Ajo</strong> (a
+                    West African rotating savings group) as a Soroban smart contract: staked collateral, scheduled
+                    contributions, rotating payout, member-voted slashing on default.{' '}
+                    <a
+                      href="#" onClick={(e) => { e.preventDefault(); setActiveView('protocol'); }}
+                      className="text-orange-500 font-semibold hover:underline whitespace-nowrap"
+                    >
+                      How it works →
+                    </a>
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <a
+                      href={stellarExpertContractUrl(ORBIT_FACTORY_ADDRESS)}
+                      target="_blank" rel="noopener noreferrer"
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all hover:border-orange-500/40 ${
+                        isLight ? 'bg-zinc-50 border-zinc-200/80 text-zinc-600' : 'bg-white/5 border-white/5 text-white/60'
+                      }`}
+                    >
+                      <span className="uppercase font-sans font-bold text-orange-500 text-[9px]">factory</span>
+                      {ORBIT_FACTORY_ADDRESS.slice(0, 6)}…{ORBIT_FACTORY_ADDRESS.slice(-4)}
+                      <ArrowUpRight className="w-3 h-3 shrink-0" />
+                    </a>
+                    {orbits.filter(o => o.contractAddress).map(o => (
+                      <a
+                        key={o.id}
+                        href={stellarExpertContractUrl(o.contractAddress!)}
+                        target="_blank" rel="noopener noreferrer"
+                        title={o.name}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all hover:border-orange-500/40 ${
+                          isLight ? 'bg-zinc-50 border-zinc-200/80 text-zinc-600' : 'bg-white/5 border-white/5 text-white/60'
+                        }`}
+                      >
+                        <span className="uppercase font-sans font-bold text-orange-500 text-[9px]">{o.name.split(' ')[0]}</span>
+                        {o.contractAddress!.slice(0, 6)}…{o.contractAddress!.slice(-4)}
+                        <ArrowUpRight className="w-3 h-3 shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Stat Metrics Bento Grid (4 Cards) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <motion.div
+                  variants={staggerContainer} initial="hidden" animate="show"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                >
                   {/* Card 1: TVL */}
-                  <div className={`p-4.5 rounded-2xl border transition-all duration-300 ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
+                  <motion.div variants={staggerItem} whileHover={{ y: -3 }} className={`p-4.5 rounded-2xl border transition-colors duration-300 hover:shadow-lg ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
                     <div className="flex justify-between items-start">
                       <span className={`text-[9px] uppercase tracking-widest font-bold ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Total Value Locked (TVL)</span>
                       <Coins className="w-4 h-4 text-orange-500" />
@@ -388,10 +452,10 @@ export default function App() {
                       <span className="text-[9px] text-emerald-500 font-bold bg-emerald-500/10 px-1 py-0.2 rounded font-mono">+$50.00 Last Cycle</span>
                       <span className={`text-[9px] ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Real-Time Escrow</span>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Card 2: Connected Orbits */}
-                  <div className={`p-4.5 rounded-2xl border transition-all duration-300 ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
+                  <motion.div variants={staggerItem} whileHover={{ y: -3 }} className={`p-4.5 rounded-2xl border transition-colors duration-300 hover:shadow-lg ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
                     <div className="flex justify-between items-start">
                       <span className={`text-[9px] uppercase tracking-widest font-bold ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Soroban Smart Contracts</span>
                       <RefreshCw className="w-4 h-4 text-orange-500 animate-spin-slow" />
@@ -404,10 +468,10 @@ export default function App() {
                       <span className="text-[9px] text-emerald-500 font-bold bg-emerald-500/10 px-1 py-0.2 rounded font-mono">100% Active</span>
                       <span className={`text-[9px] ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>0 Default Terminations</span>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Card 3: Total Enrolled Users */}
-                  <div className={`p-4.5 rounded-2xl border transition-all duration-300 ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
+                  <motion.div variants={staggerItem} whileHover={{ y: -3 }} className={`p-4.5 rounded-2xl border transition-colors duration-300 hover:shadow-lg ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
                     <div className="flex justify-between items-start">
                       <span className={`text-[9px] uppercase tracking-widest font-bold ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Active Peer Members</span>
                       <UserCheck className="w-4 h-4 text-orange-500" />
@@ -420,10 +484,10 @@ export default function App() {
                       <span className="text-[9px] text-emerald-500 font-bold bg-emerald-500/10 px-1 py-0.2 rounded font-mono">100% Repay Compliant</span>
                       <span className={`text-[9px] ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Passkey Registered</span>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Card 4: Reputation Issuer Status */}
-                  <div className={`p-4.5 rounded-2xl border transition-all duration-300 ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
+                  <motion.div variants={staggerItem} whileHover={{ y: -3 }} className={`p-4.5 rounded-2xl border transition-colors duration-300 hover:shadow-lg ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
                     <div className="flex justify-between items-start">
                       <span className={`text-[9px] uppercase tracking-widest font-bold ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Reputation Issuer State</span>
                       <Award className="w-4 h-4 text-orange-500" />
@@ -435,67 +499,32 @@ export default function App() {
                       <span className="text-[9px] text-emerald-500 font-bold bg-emerald-500/10 px-1 py-0.2 rounded font-mono">Issuer Online</span>
                       <span className={`text-[9px] ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Secured Credentials</span>
                     </div>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
-                {/* Node Status & Live Synchronization Panel */}
-                <div className={`p-5 rounded-2xl border grid grid-cols-1 md:grid-cols-4 gap-4 transition-colors duration-300 ${
-                  isLight ? 'bg-zinc-50 border-zinc-200/80' : 'bg-[#050505] border-white/5'
-                }`}>
-                  <div className="text-left space-y-1">
-                    <span className={`text-[8px] uppercase font-bold tracking-widest block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Stellar Node Horizon</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className={`font-mono text-xs font-semibold ${isLight ? 'text-zinc-900' : 'text-white'}`}>horizon.stellar.org</span>
-                    </div>
-                    <span className={`text-[10px] block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Latency: 110ms • Pubnet SSL</span>
-                  </div>
-
-                  <div className="text-left space-y-1 md:border-l md:pl-4 border-dashed border-zinc-200 dark:border-white/5">
-                    <span className={`text-[8px] uppercase font-bold tracking-widest block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Postgres Indexer Schema</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className={`font-mono text-xs font-semibold ${isLight ? 'text-zinc-900' : 'text-white'}`}>Synced schema_v1.0</span>
-                    </div>
-                    <span className={`text-[10px] block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Block: #10,291,245 (0s delay)</span>
-                  </div>
-
-                  <div className="text-left space-y-1 md:border-l md:pl-4 border-dashed border-zinc-200 dark:border-white/5">
-                    <span className={`text-[8px] uppercase font-bold tracking-widest block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Passkey Biometric signing</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span className={`font-mono text-xs font-semibold ${isLight ? 'text-zinc-900' : 'text-white'}`}>FIDO2 Validator Ready</span>
-                    </div>
-                    <span className={`text-[10px] block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Passkey Hardware Key simulation</span>
-                  </div>
-
-                  <div className="text-left space-y-1 md:border-l md:pl-4 border-dashed border-zinc-200 dark:border-white/5">
-                    <span className={`text-[8px] uppercase font-bold tracking-widest block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>WebSocket Broadcaster</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
-                      <span className={`font-mono text-xs font-semibold ${isLight ? 'text-zinc-900' : 'text-white'}`}>Active Subscribers: 6</span>
-                    </div>
-                    <span className={`text-[10px] block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>Real-Time State synchronization</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* Left Box: Active Orbits Overview List */}
-                  <div className="lg:col-span-8 space-y-4">
+                {/* Full-width: quick actions/recent-events duplicated the sidebar
+                    nav and the Ledger Monitor page, so they were cut rather than
+                    squeezed into a side column here. */}
+                <div className="space-y-4">
                     <h3 className={`font-serif italic text-sm font-medium flex items-center gap-2 ${isLight ? 'text-zinc-900' : 'text-white'}`}>
                       <RefreshCw className="w-4 h-4 text-orange-500 animate-spin-slow" /> Active Deployed Savings Orbits
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <motion.div
+                      variants={staggerContainer} initial="hidden" animate="show"
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    >
                       {orbits.map((orbit) => {
                         const completedRounds = orbit.currentRound - 1;
                         const compliancePercent = Math.round(
                           (orbit.members.filter(m => m.status === 'active').length / orbit.members.length) * 100
                         );
                         return (
-                          <div 
+                          <motion.div
                             key={orbit.id}
-                            className={`p-4 rounded-2xl border flex flex-col justify-between h-48 transition-all duration-300 ${
+                            variants={staggerItem}
+                            whileHover={{ y: -3 }}
+                            className={`p-4 rounded-2xl border flex flex-col justify-between h-48 transition-colors duration-300 hover:shadow-lg ${
                               isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'
                             }`}
                           >
@@ -554,95 +583,11 @@ export default function App() {
                                 View Live <ChevronRight className="w-3 h-3 text-orange-500" />
                               </button>
                             </div>
-                          </div>
+                          </motion.div>
                         );
                       })}
-                    </div>
+                    </motion.div>
                   </div>
-
-                  {/* Right Box: Launcher Quick Actions and Logs */}
-                  <div className="lg:col-span-4 space-y-4 text-left">
-                    <h3 className={`font-serif italic text-sm font-medium flex items-center gap-2 ${isLight ? 'text-zinc-900' : 'text-white'}`}>
-                      <PlusCircle className="w-4 h-4 text-orange-500" /> Launch Quick Simulation Actions
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-2 text-[10px] font-semibold uppercase tracking-wider">
-                      <button
-                        onClick={() => setActiveView('member-portal')}
-                        className={`p-3 rounded-2xl border text-left flex flex-col justify-between h-24 transition-all hover:border-orange-500/30 ${
-                          isLight ? 'bg-white border-zinc-200 shadow-sm text-zinc-800' : 'bg-[#09090A] border-white/10 text-white'
-                        }`}
-                      >
-                        <Smartphone className="w-5 h-5 text-orange-500" />
-                        <span>Simulate Member App</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveView('create-orbit')}
-                        className={`p-3 rounded-2xl border text-left flex flex-col justify-between h-24 transition-all hover:border-orange-500/30 ${
-                          isLight ? 'bg-white border-zinc-200 shadow-sm text-zinc-800' : 'bg-[#09090A] border-white/10 text-white'
-                        }`}
-                      >
-                        <PlusCircle className="w-5 h-5 text-emerald-500" />
-                        <span>Deploy Soroban ROSCA</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveView('admin-hub')}
-                        className={`p-3 rounded-2xl border text-left flex flex-col justify-between h-24 transition-all hover:border-orange-500/30 ${
-                          isLight ? 'bg-white border-zinc-200 shadow-sm text-zinc-800' : 'bg-[#09090A] border-white/10 text-white'
-                        }`}
-                      >
-                        <Scale className="w-5 h-5 text-red-500" />
-                        <span>Dispute & Slashing Hub</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveView('verifier')}
-                        className={`p-3 rounded-2xl border text-left flex flex-col justify-between h-24 transition-all hover:border-orange-500/30 ${
-                          isLight ? 'bg-white border-zinc-200 shadow-sm text-zinc-800' : 'bg-[#09090A] border-white/10 text-white'
-                        }`}
-                      >
-                        <ShieldCheck className="w-5 h-5 text-cyan-500" />
-                        <span>ZK Credit Verifier</span>
-                      </button>
-                    </div>
-
-                    {/* Compact Log Ticker Box */}
-                    <div className={`p-4 rounded-2xl border space-y-3.5 ${isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'}`}>
-                      <div className="flex justify-between items-center pb-2 border-b border-dashed border-zinc-200 dark:border-white/5">
-                        <span className={`text-[9px] uppercase font-bold tracking-widest block ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>
-                          Recent Ledger Events
-                        </span>
-                        <button 
-                          onClick={() => setActiveView('ledger')} 
-                          className="text-[9px] text-orange-500 font-bold uppercase tracking-wider hover:underline flex items-center gap-0.5"
-                        >
-                          Full Console <ChevronRight className="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      <div className="space-y-2.5 font-mono text-[10px]">
-                        {logs.slice(0, 4).map((log) => (
-                          <div key={log.id} className="flex gap-2 min-w-0 items-start">
-                            <span className={isLight ? 'text-zinc-400' : 'text-white/20'}>{log.timestamp}</span>
-                            <span className="text-orange-500 uppercase text-[8px] font-bold border border-orange-500/15 px-1 rounded select-none shrink-0 mt-0.5">
-                              {log.type}
-                            </span>
-                            <span className={`truncate flex-1 ${isLight ? 'text-zinc-700' : 'text-white/70'}`} title={log.message}>
-                              {log.message}
-                            </span>
-                          </div>
-                        ))}
-                        {logs.length === 0 && (
-                          <p className={`text-[10px] font-sans italic py-2 ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>
-                            No ledger events registered yet.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </motion.div>
             )}
 

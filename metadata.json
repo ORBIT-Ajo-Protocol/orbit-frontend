@@ -1,6 +1,0 @@
-{
-  "name": "ORBIT Ajo Protocol",
-  "description": "A rotating savings group (Ajo/ROSCA) protocol built on Stellar/Soroban with ZK reputation credentials.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

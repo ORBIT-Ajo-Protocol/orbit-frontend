@@ -27,6 +27,10 @@ export interface OrbitGroup {
   livePotBalance: number; // current round pot held in contract
   // Key represents memberId, value is array of booleans indicating contribution status for each round
   roundsHistory: { [memberId: string]: boolean[] };
+  // Real deployed Soroban contract ID on testnet for this sample orbit, if any.
+  // The rest of this orbit's state is still simulated locally (see README) —
+  // this address is real and independently inspectable on stellar.expert.
+  contractAddress?: string;
 }
 
 export interface LogEvent {
