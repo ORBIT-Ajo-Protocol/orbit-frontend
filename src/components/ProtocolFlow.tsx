@@ -97,7 +97,7 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
   const currentStep = steps.find(s => s.id === activeStep) || steps[0];
 
   return (
-    <div className={`border rounded-3xl p-6 shadow-2xl transition-all duration-300 text-left ${
+    <div className={`border rounded-3xl p-8 shadow-2xl transition-all duration-300 text-left ${
       isLight ? 'bg-white border-zinc-200 text-zinc-800' : 'bg-[#0A0A0A] border-white/10 text-[#E0E0E0]'
     }`}>
       <div className="flex items-center gap-3.5 mb-6">
@@ -212,7 +212,7 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
             </p>
 
             {/* Simulated Live Visuals (SVG animations) */}
-            <div className={`h-24 rounded-2xl border flex items-center justify-center relative overflow-hidden p-4 mb-4 ${
+            <div className={`h-40 rounded-2xl border flex items-center justify-center relative overflow-hidden p-6 mb-4 ${
               isLight ? 'bg-white border-zinc-200 shadow-inner' : 'bg-black/40 border-white/5 shadow-inner'
             }`}>
               {/* Simulation animation tracks */}
