@@ -14,6 +14,9 @@ reputation sharing) and a web admin portal (deploy a group, dispute &
 slashing hub, ZK proof verifier), plus a walkthrough of the protocol's four
 stages (SEP-24 anchor, Soroban ROSCA, collateral slasher, ZK reputation).
 
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for how all three ORBIT repos fit
+together and a detailed end-to-end workflow of the protocol.
+
 ## Status
 
 **Currently fully simulated** — all on-chain, indexer, and anchor behavior
@@ -29,6 +32,13 @@ means:
   not a cryptographic proof.
 - Contributions, payouts, staking, and slashing only mutate local React
   state and never touch the deployed `orbit-contract`/`orbit-factory`.
+
+The Dashboard's live testnet contract links (factory + two sample orbits)
+are a deliberate exception — those addresses are real, independently
+verifiable on `stellar.expert`. Its stat numbers also tick up periodically
+via a simulated "activity heartbeat" (a small pot-balance increment + a
+matching Ledger log entry every 9–14s); that's explicitly dummy data for
+demo texture, not a claim of live chain sync — see ARCHITECTURE.md.
 
 ## Run locally
 
@@ -49,13 +59,20 @@ read anywhere in `src/`.
 
 ## Layout
 
-- `src/App.tsx` — shell: sidebar navigation, theming, dashboard.
+- `src/App.tsx` — shell: top nav (5 views — Dashboard, Member App, Admin
+  Portal, Ledger, Guide) on desktop, bottom tab bar on mobile, theming, and
+  the Dashboard view itself.
 - `src/components/MobileApp.tsx` — member app simulator (onboarding, SEP-24
   deposit/withdrawal, contributions, payouts, dispute flagging, ZK proof
   generation).
-- `src/components/WebPortal.tsx` — admin/web side: create-orbit form,
-  dispute & slashing hub, ZK proof verifier.
-- `src/components/ProtocolFlow.tsx` — the four-stage conceptual walkthrough.
+- `src/components/WebPortal.tsx` — Admin Portal: its own internal tabs for
+  create-orbit, the dispute & slashing hub, and the ZK proof verifier (one
+  component, `defaultTab` prop selects which tab opens).
+- `src/components/ProtocolFlow.tsx` — the four-stage conceptual walkthrough
+  (the Guide view).
 - `src/components/NetworkLedger.tsx` — the simulated live log console.
 - `src/data.ts` / `src/types.ts` — seed data and the `OrbitGroup`/`Member`/
   `UserWallet`/`LogEvent` domain model.
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for what each piece maps to on the
+real contracts/backend side, and the detailed end-to-end workflow.
