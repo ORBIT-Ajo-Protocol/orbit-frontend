@@ -370,6 +370,18 @@ export default function App() {
                     <h2 className="font-display text-[19px] font-semibold">Active Savings Orbits</h2>
                   </div>
 
+                  {orbits.length === 0 ? (
+                    <div className={`p-8 rounded-[16px] border text-center ${
+                      isLight ? 'bg-white border-[#15151A]/[0.09]' : 'bg-[#131316] border-white/[0.08]'
+                    }`}>
+                      <p className={`text-sm font-semibold ${isLight ? 'text-[#15151A]/70' : 'text-white/70'}`}>
+                        No orbits yet
+                      </p>
+                      <p className={`text-[13px] mt-1 ${isLight ? 'text-[#15151A]/50' : 'text-white/50'}`}>
+                        Once a group is deployed on-chain, it'll show up here.
+                      </p>
+                    </div>
+                  ) : (
                   <motion.div
                     variants={staggerContainer} initial="hidden" animate="show"
                     className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -440,6 +452,7 @@ export default function App() {
                       </motion.div>
                     ))}
                   </motion.div>
+                  )}
                 </div>
               </motion.div>
             )}
