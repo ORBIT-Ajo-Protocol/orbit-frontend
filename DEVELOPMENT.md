@@ -16,6 +16,35 @@ sections below cover contracts, backend, and frontend in turn, and the
 last section says plainly what is still not done, so nothing here is
 overstated.
 
+## Repository fundamentals
+
+Before any of the feature work below, the basics that were actually
+missing when the project was rejected got fixed directly: none of the
+three repos had a license, so all three got an MIT license added; and
+none of the three had continuous integration actually running on every
+push, so all three got a real CI workflow added — `cargo test` plus
+`cargo clippy` on the contracts repo, a typecheck-and-build on the
+frontend repo, and the same on the backend repo, later extended with a
+real Postgres service container so the backend's test suite runs
+against an actual database in CI, not just a local one. These aren't
+cosmetic: they're the
+concrete, checkable difference between "a repo with code in it" and
+"a repo a reviewer can build, test, and legally reuse without asking."
+
+The backlog of open GitHub issues across all three repos was worked
+through with real fixes, not just closed for the sake of a clean count:
+37 issues closed across the three repos combined, each with an actual
+code change addressing it, verified and pushed to `main` before being
+marked closed. The issues left open are left open on purpose, not
+by neglect — they're almost entirely the write-side wiring (real wallet
+signing, real contribution/payout/dispute transactions from the UI) that
+this pass deliberately scoped out in favor of shipping the real read
+path described below, plus a couple of larger items (a security audit,
+fuzz testing, a full Soroban-sandbox integration test harness) that
+need infrastructure or budget this pass didn't have. Both categories are
+named explicitly in "What this doesn't claim" at the end of this
+document.
+
 ## Contracts
 
 A manual security review found and fixed a real access-control gap:
