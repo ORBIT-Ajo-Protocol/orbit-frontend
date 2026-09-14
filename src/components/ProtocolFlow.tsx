@@ -122,13 +122,15 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
           {steps.map((step) => {
             const isActive = step.id === activeStep;
             return (
-              <button
+              <motion.button
                 key={step.id}
+                whileHover={{ x: 3 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setActiveStep(step.id);
                   setIsPlaying(false);
                 }}
-                className={`w-full text-left p-3.5 rounded-2xl border transition-all duration-300 flex items-start gap-3.5 ${
+                className={`w-full text-left p-3.5 rounded-2xl border transition-colors duration-300 flex items-start gap-3.5 ${
                   isActive 
                     ? (isLight 
                         ? 'bg-orange-50/50 border-orange-500/40 text-zinc-900 shadow-sm' 
@@ -161,7 +163,7 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
                     {step.subtitle}
                   </p>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -177,9 +179,18 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
                 <span className="text-[9px] font-bold tracking-widest uppercase text-orange-500">
                   Step {currentStep.id} of 4 • Protocol Mechanics
                 </span>
-                <h3 className={`font-serif italic text-sm font-medium mt-0.5 ${isLight ? 'text-zinc-900' : 'text-white'}`}>
-                  {currentStep.title}
-                </h3>
+                <AnimatePresence mode="wait">
+                  <motion.h3
+                    key={currentStep.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                    className={`font-serif italic text-sm font-medium mt-0.5 ${isLight ? 'text-zinc-900' : 'text-white'}`}
+                  >
+                    {currentStep.title}
+                  </motion.h3>
+                </AnimatePresence>
               </div>
 
               <button
@@ -207,9 +218,18 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
               </button>
             </div>
 
-            <p className={`text-[11px] leading-relaxed mb-4 ${isLight ? 'text-zinc-650' : 'text-white/70'}`}>
-              {currentStep.description}
-            </p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={currentStep.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2, delay: 0.03 }}
+                className={`text-[11px] leading-relaxed mb-4 ${isLight ? 'text-zinc-650' : 'text-white/70'}`}
+              >
+                {currentStep.description}
+              </motion.p>
+            </AnimatePresence>
 
             {/* Simulated Live Visuals (SVG animations) */}
             <div className={`h-40 rounded-2xl border flex items-center justify-center relative overflow-hidden p-6 mb-4 ${
@@ -421,7 +441,7 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
 
             {/* Smart Contract Signature & Methods */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={`p-3 rounded-xl border font-mono text-[10px] ${
+              <div className={`p-3 rounded-xl border font-mono text-[10px] transition-colors hover:border-orange-500/40 ${
                 isLight ? 'bg-white border-zinc-200' : 'bg-black/20 border-white/5'
               }`}>
                 <span className={`text-[8px] uppercase tracking-wider block font-bold font-sans ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>
@@ -433,7 +453,7 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
                 </span>
               </div>
 
-              <div className={`p-3 rounded-xl border font-mono text-[10px] ${
+              <div className={`p-3 rounded-xl border font-mono text-[10px] transition-colors hover:border-emerald-500/40 ${
                 isLight ? 'bg-white border-zinc-200' : 'bg-black/20 border-white/5'
               }`}>
                 <span className={`text-[8px] uppercase tracking-wider block font-bold font-sans ${isLight ? 'text-zinc-400' : 'text-white/30'}`}>
@@ -458,7 +478,7 @@ export default function ProtocolFlow({ theme }: ProtocolFlowProps) {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {currentStep.dataPoints.map((dp, idx) => (
-                <div key={idx} className={`p-2.5 rounded-xl border text-[11px] font-sans flex items-start gap-2 ${
+                <div key={idx} className={`p-2.5 rounded-xl border text-[11px] font-sans flex items-start gap-2 transition-colors hover:border-orange-500/30 ${
                   isLight ? 'bg-zinc-50 border-zinc-150' : 'bg-white/5 border-white/5'
                 }`}>
                   <span className="font-mono text-[10px] text-orange-500 font-bold">0{idx + 1}.</span>

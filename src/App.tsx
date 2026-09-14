@@ -529,13 +529,72 @@ export default function App() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="w-full"
+                className="w-full text-left"
               >
+                <div className="mb-5">
+                  <span className="text-[9px] font-bold tracking-widest uppercase text-orange-500">
+                    Four Stages, One Protocol
+                  </span>
+                  <h2 className="font-display text-lg md:text-xl font-semibold mt-1">
+                    How ORBIT Actually Works
+                  </h2>
+                </div>
                 <ProtocolFlow theme={theme} />
               </motion.div>
             )}
 
           </AnimatePresence>
+
+          {/* --- FOOTER --- */}
+          <motion.footer
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.4 }}
+            className={`mt-4 pt-8 pb-2 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 text-left ${
+              isLight ? 'border-[#15151A]/[0.09]' : 'border-white/[0.08]'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <ellipse cx="12" cy="12" rx="9.5" ry="4" stroke="currentColor" strokeWidth="1.6" transform="rotate(-24 12 12)" />
+                <ellipse cx="12" cy="12" rx="9.5" ry="4" stroke="currentColor" strokeWidth="1.6" transform="rotate(24 12 12)" />
+                <circle cx="12" cy="12" r="2.4" className="fill-orange-500" />
+              </svg>
+              <div>
+                <span className="font-display text-[13px] font-bold block leading-none">ORBIT</span>
+                <span className={`text-[11px] mt-1 block ${isLight ? 'text-[#15151A]/50' : 'text-white/44'}`}>
+                  Ajo, rebuilt on Stellar Soroban.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 text-[12.5px] font-semibold">
+              {[
+                { label: 'GitHub Org', href: 'https://github.com/ORBIT-Ajo-Protocol' },
+                { label: 'Contracts', href: 'https://github.com/ORBIT-Ajo-Protocol/orbit-contracts' },
+                { label: 'Backend', href: 'https://github.com/ORBIT-Ajo-Protocol/orbit-backend' },
+                { label: 'Frontend', href: 'https://github.com/ORBIT-Ajo-Protocol/orbit-frontend' },
+              ].map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank" rel="noopener noreferrer"
+                  className={`flex items-center gap-1 group ${isLight ? 'text-[#15151A]/60' : 'text-white/56'}`}
+                >
+                  <span className="group-hover:text-orange-500 transition-colors border-b border-transparent group-hover:border-orange-500 pb-0.5">
+                    {link.label}
+                  </span>
+                  <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-orange-500" />
+                </a>
+              ))}
+              <span className={`px-2 py-1 rounded-full text-[10.5px] font-bold uppercase tracking-wide ${
+                isLight ? 'bg-[#15151A]/[0.06] text-[#15151A]/50' : 'bg-white/[0.06] text-white/40'
+              }`}>
+                MIT Licensed
+              </span>
+            </div>
+          </motion.footer>
 
         </div>
       </main>
