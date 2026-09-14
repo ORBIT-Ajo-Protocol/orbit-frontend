@@ -1,7 +1,20 @@
-# What's changed
+# Development work and improvements since the rejection
 
-A description of the substantive work done across all three ORBIT repos
-since the project was last reviewed — real code, not just documentation.
+This is a direct answer to "what development work / improvements have you
+made since the repo was initially rejected?" — everything below is
+substantive work done across all three ORBIT repos (contracts, backend,
+frontend) from when work resumed on this project after the rejection up
+to now. It's real code and real on-chain activity, not documentation
+written to look like progress: a genuine access-control security fix
+with a regression test, real bugs found and fixed by new tests that
+didn't exist before, a real bug found in a third-party SDK and worked
+around, a container that was actually built and run, a graceful shutdown
+that was actually triggered and observed, and two orbit contracts that
+were actually deployed, staffed with real members, and run through real
+contribution rounds on a public testnet — not simulated. The three
+sections below cover contracts, backend, and frontend in turn, and the
+last section says plainly what is still not done, so nothing here is
+overstated.
 
 ## Contracts
 
