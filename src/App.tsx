@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { INITIAL_ORBITS, INITIAL_USER_WALLET, ORBIT_FACTORY_ADDRESS, stellarExpertContractUrl } from './data';
 import { OrbitGroup, UserWallet, LogEvent } from './types';
+import { fetchLiveOrbit, stroopsToDisplay, LiveOrbit } from './lib/api';
 import MobileApp from './components/MobileApp';
 import WebPortal from './components/WebPortal';
 import NetworkLedger from './components/NetworkLedger';
@@ -68,6 +69,40 @@ export default function App() {
     setLogs([]);
   };
 
+  // Real read-path wiring: fetches each orbit's actual on-chain state from
+  // the real backend (see ARCHITECTURE.md). Keyed by contractAddress; an
+  // orbit with no entry here either hasn't been fetched yet or the fetch
+  // failed (backend unreachable) — the Dashboard falls back to the
+  // simulated figures below in that case, never crashes over it. This
+  // only overlays the Dashboard's display; the Member App / Admin Portal
+  // simulators are untouched and still fully simulated.
+  const [liveOrbits, setLiveOrbits] = useState<Record<string, LiveOrbit>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const addresses = orbits.map((o) => o.contractAddress).filter((a): a is string => !!a);
+
+    const refresh = async () => {
+      const results = await Promise.all(addresses.map((address) => fetchLiveOrbit(address)));
+      if (cancelled) return;
+      setLiveOrbits((prev) => {
+        const next = { ...prev };
+        results.forEach((live, i) => {
+          if (live) next[addresses[i]] = live;
+        });
+        return next;
+      });
+    };
+
+    refresh();
+    const interval = setInterval(refresh, 20000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- addresses are static seed data, not state
+  }, []);
+
   // Simulated activity heartbeat: nudges one orbit's pot balance up (capped
   // at that round's full contribution amount, so it can't run away) and logs
   // a matching contract event. Driving both the Ledger feed and the
@@ -80,6 +115,11 @@ export default function App() {
     const timeout = setTimeout(() => {
       const candidates = orbits.filter((o) => {
         if (o.status !== 'active') return false;
+        // Don't fake movement on top of an orbit we're already getting
+        // real state for — that would be exactly the kind of independently
+        // -flickering, inconsistent-with-reality figure this heartbeat was
+        // built to avoid in the first place.
+        if (o.contractAddress && liveOrbits[o.contractAddress]) return false;
         const activeMemberCount = o.members.filter((m) => m.status === 'active').length;
         return o.livePotBalance < o.contributionAmount * activeMemberCount;
       });
@@ -99,7 +139,7 @@ export default function App() {
       );
     }, delay);
     return () => clearTimeout(timeout);
-  }, [orbits]);
+  }, [orbits, liveOrbits]);
 
   const handleNavigateToWebVerifier = (proofLink: string) => {
     setIncomingVerifierLink(proofLink);
@@ -119,8 +159,25 @@ export default function App() {
     show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', damping: 22, stiffness: 220 } },
   };
 
+  // Overlays real fetched fields onto the simulated baseline for display —
+  // only used by the Dashboard (stats + orbit cards). Member Portal / Admin
+  // Portal keep reading the plain `orbits` state, since wiring those is a
+  // separate, larger pass (real wallet signing, not just reads).
+  const dashboardOrbits = orbits.map((o) => {
+    const live = o.contractAddress ? liveOrbits[o.contractAddress] : undefined;
+    if (!live) return { ...o, isLive: false as const };
+    return {
+      ...o,
+      isLive: true as const,
+      currentRound: live.state.current_round,
+      totalRounds: live.config.total_rounds,
+      livePotBalance: stroopsToDisplay(live.state.live_pot_balance),
+      status: (live.state.status === 1 ? 'active' : live.state.status === 2 ? 'completed' : 'pending') as OrbitGroup['status'],
+    };
+  });
+
   // Calculate dynamically for dashboard metrics
-  const totalValueLocked = orbits.reduce((sum, o) => {
+  const totalValueLocked = dashboardOrbits.reduce((sum, o) => {
     // Escrow balance + Collateral locked (10% standard stake on total group size potential contributions)
     const activeMembersCount = o.members.filter(m => m.status === 'active').length;
     const collateralLocked = o.contributionAmount * activeMembersCount * (o.stakePercentage / 100);
@@ -128,7 +185,7 @@ export default function App() {
   }, 0);
 
   const totalMembers = Array.from(
-    new Set(orbits.flatMap(o => o.members.filter(m => m.status === 'active').map(m => m.id)))
+    new Set(dashboardOrbits.flatMap(o => o.members.filter(m => m.status === 'active').map(m => m.id)))
   ).length;
 
   // Consolidated from 7 items to 5: "Deploy Smart Contracts", "Admin Control
@@ -386,7 +443,7 @@ export default function App() {
                     variants={staggerContainer} initial="hidden" animate="show"
                     className="grid grid-cols-1 md:grid-cols-2 gap-4"
                   >
-                    {orbits.map((orbit) => (
+                    {dashboardOrbits.map((orbit) => (
                       <motion.div
                         key={orbit.id}
                         variants={staggerItem}
@@ -397,7 +454,18 @@ export default function App() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <h3 className="font-display text-[16px] font-semibold mb-1">{orbit.name}</h3>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-display text-[16px] font-semibold">{orbit.name}</h3>
+                              {orbit.isLive && (
+                                <span
+                                  title="Fetched live from the real backend, from real on-chain state"
+                                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide text-orange-500"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                                  Live
+                                </span>
+                              )}
+                            </div>
                             {orbit.contractAddress && (
                               <span className={`font-mono text-[11px] ${isLight ? 'text-[#15151A]/40' : 'text-white/34'}`}>
                                 {orbit.contractAddress.slice(0, 6)}…{orbit.contractAddress.slice(-4)}

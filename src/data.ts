@@ -71,7 +71,7 @@ export const INITIAL_ORBITS: OrbitGroup[] = [
   {
     id: 'orbit_lagos_solar',
     name: 'Lagos Solar Orbit',
-    contractAddress: 'CBZGTZNEB74FDVGEHKPCEROEN6QGD5NYNG7PLYWMHHF4OD24X6CHXV7K',
+    contractAddress: 'CA6PRW7I752US45ZPASZBRNTEV4KO4YTU3NHKPCJ35JZOZHA3PQCPJNP',
     contributionAmount: 50, // USDC ($50 ≈ 75,000 NGN)
     frequency: 'Weekly',
     payoutOrder: 'fixed',
@@ -93,10 +93,10 @@ export const INITIAL_ORBITS: OrbitGroup[] = [
   {
     id: 'orbit_abuja_galaxy',
     name: 'Abuja Galaxy Orbit',
-    contractAddress: 'CAT5CLZ6QN3OBWJ6SPRHXCSXWFXJ4V2AEMWBDT3MD4YYQPLSIOYQSGVB',
+    contractAddress: 'CDYWDXRZZHNOIOYI5WO2QKTRBVFRJVXJJYEBG5SFNAEKFUHYCL3ZI7EC',
     contributionAmount: 150, // USDC
-    frequency: 'Monthly',
-    payoutOrder: 'random',
+    frequency: 'Weekly', // matches the real deployed config exactly
+    payoutOrder: 'fixed', // seeded as Fixed — see seed-live-orbit.ts's note on the Random-order settlement path
     stakePercentage: 15,
     totalRounds: 5,
     currentRound: 5, // final round!
