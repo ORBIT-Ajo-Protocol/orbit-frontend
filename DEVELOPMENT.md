@@ -95,6 +95,38 @@ design decision, not something to make unilaterally; and integration tests
 against a live Soroban sandbox, which needs infrastructure this pass
 didn't have.
 
+A script was written and run for real, twice, rather than just written:
+given a name and a handful of parameters, it deploys a fresh orbit
+through the live factory, funds a set of brand-new testnet keypairs
+through friendbot, joins them as members, and drives them through real
+`contribute()` and settlement calls across several full and partial
+rounds — so the orbits the frontend points at have actual seated
+members, actual locked stakes, and actual rounds run, not just an
+address with nothing behind it. Running it surfaced a real, reproducible
+bug in the `@stellar/stellar-sdk` client library itself: its generated
+result parser throws when unwrapping the response from a `contribute()`
+call that settles a round under `PayoutOrder::Random` specifically —
+confirmed, by checking the contract's own on-chain state directly
+through the `stellar` CLI rather than trusting the client, that the
+transaction really does land and really does settle correctly on-chain,
+and that only the client's parsing of the success response is broken.
+Worked around by seeding that orbit under `Fixed` order instead (the
+contract's own Random-order support is untouched and still covered by
+its Rust test suite) and updating the frontend's data to say so honestly
+rather than claim an order that wasn't actually used. The retry logic
+written for this script initially had its own bug — it wrapped the
+network call in a retry but unwrapped the result outside of it, so the
+one failure mode it existed to survive was exactly the one it didn't
+catch — found by watching a real failed run and fixed by moving the
+unwrap inside the retry and rebuilding a fresh transaction on every
+attempt instead of resubmitting a stale one.
+
+A Dockerfile and Railway deployment config were added and the image was
+actually built and run as a container against the real database, not
+just written on the assumption it would work (see above). The config
+targets Railway specifically, with a `/health`-based healthcheck and an
+on-failure restart policy.
+
 ## Frontend
 
 The UI was functionally complete but had real, specific problems, not just
@@ -144,14 +176,44 @@ protocol lifecycle with each step explicitly marked as either real or
 simulated — so nothing in this project overstates what's actually working
 versus what's still a demonstration.
 
+The dashboard's two sample orbits were switched from empty, freshly
+deployed shells to the real, populated contracts described in the backend
+section above, and the dashboard was wired to actually read their live
+on-chain state — not just link to it. A small API client fetches each
+orbit's real config and state from the backend on load and again every
+twenty seconds, and the dashboard overlays that real data (current round,
+pot balance, status, member count) on top of the sample data whenever
+it's available, with a small pulsing "Live" badge next to the name so
+it's visible which figures are real. The failure path was written
+deliberately soft: if the backend is unreachable, the fetch quietly
+returns nothing and the dashboard falls back to its existing simulated
+heartbeat for that orbit instead of showing an error or a blank card. The
+simulated heartbeat itself was updated to defer to real data automatically
+— it now skips any orbit for which live data has actually arrived, so the
+two systems don't fight over the same numbers. This is a read path only:
+the Member App and Admin Portal simulators, and every action a user takes
+in them, are still entirely simulated client-side, which is a deliberate
+scope boundary for this pass and not an oversight.
+
 ## What this doesn't claim
 
-The frontend is still not wired to the real backend or the real deployed
-contracts — every on-chain interaction a user takes in the demo UI is
-still simulated client-side. That gap is explicitly documented, not
-hidden, in this repo's own architecture notes. Everything described above
-is real: a genuine security fix with a regression test proving it, two
-genuine bugs caught by tests that didn't exist before, working CI on every
-repo, a container that was actually built and run, and a graceful shutdown
-that was actually triggered and observed — not a list of things merely
-written and assumed to work.
+The two sample orbits are real, live contracts on Stellar testnet with
+real seated members, real locked stakes, and real contribution rounds —
+not placeholders — and the dashboard now reads their actual on-chain
+state through the backend rather than only linking to them. What's still
+not true: no user action taken inside the demo UI — joining an orbit,
+contributing, voting on a dispute — talks to the real chain; those are
+still entirely simulated client-side in the Member App and Admin Portal,
+by deliberate scope choice, not by accident. The backend is not yet
+deployed anywhere publicly reachable; it has a Dockerfile and Railway
+config that were built and run locally against a real database, but the
+dashboard's live read path currently talks to a locally-run instance, not
+a hosted one. That gap is explicit here rather than glossed over.
+Everything else described above is real: a genuine security fix with a
+regression test proving it, two genuine bugs caught by tests that didn't
+exist before, a genuine bug found in a third-party SDK and worked around
+rather than ignored, working CI on every repo, a container that was
+actually built and run, a graceful shutdown that was actually triggered
+and observed, and two orbits that were actually deployed and populated on
+a public testnet, not simulated — not a list of things merely written and
+assumed to work.
