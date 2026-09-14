@@ -117,7 +117,7 @@ export default function App() {
     }`}>
 
       {/* --- DESKTOP HEADER (lg+): full-width top nav, no left rail --- */}
-      <header className={`hidden lg:flex items-center justify-between px-10 h-[72px] shrink-0 border-b transition-colors duration-300 ${
+      <header className={`hidden lg:flex sticky top-0 z-20 items-center justify-between px-10 h-[72px] shrink-0 border-b transition-colors duration-300 ${
         isLight ? 'bg-[#F7F6F4] border-[#15151A]/[0.09]' : 'bg-[#0A0A0C] border-white/[0.08]'
       }`}>
         <div className="flex items-center gap-9">
@@ -420,18 +420,18 @@ export default function App() {
 
                 {/* Educational/Helper Side panel */}
                 <div className="lg:col-span-7 space-y-6 text-left">
-                  <div className={`p-6 rounded-3xl border transition-colors duration-300 ${
-                    isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-[#09090A] border-white/10'
+                  <div className={`p-7 rounded-3xl border transition-colors duration-300 ${
+                    isLight ? 'bg-white border-[#15151A]/[0.09] shadow-sm' : 'bg-[#131316] border-white/[0.08]'
                   }`}>
                     <span className="text-[9px] font-bold tracking-widest uppercase text-orange-500">
                       Interactive Client Simulation Workspace
                     </span>
-                    <h3 className={`font-serif italic text-lg md:text-xl font-medium mt-1 mb-3.5 ${isLight ? 'text-zinc-900 font-bold' : 'text-white'}`}>
+                    <h3 className="font-display text-lg md:text-xl font-semibold mt-1 mb-3.5">
                       Simulating the Member Mobile Experience
                     </h3>
 
                     <div className="space-y-4 text-xs leading-relaxed">
-                      <p className={isLight ? 'text-zinc-600' : 'text-white/60'}>
+                      <p className={isLight ? 'text-[#15151A]/60' : 'text-white/58'}>
                         The mobile client interface on the left represents the member-facing application. Users can onboarding themselves using standard local Nigerian credentials and biometrics, simulate funding a wallet via a Stellar SEP-24 compliant gateway, and interact with smart ROSCA groups.
                       </p>
 
@@ -440,35 +440,38 @@ export default function App() {
                       }`}>
                         <Radio className="w-5 h-5 text-orange-500 shrink-0 mt-0.5 animate-pulse" />
                         <div>
-                          <span className={`font-semibold text-xs ${isLight ? 'text-zinc-900' : 'text-white'}`}>Simulating Real-Time Block Sync</span>
-                          <p className={`mt-0.5 text-[11px] ${isLight ? 'text-zinc-500' : 'text-white/40'}`}>
+                          <span className={`font-semibold text-xs ${isLight ? 'text-[#15151A]' : 'text-white'}`}>Simulating Real-Time Block Sync</span>
+                          <p className={`mt-0.5 text-[11px] ${isLight ? 'text-[#15151A]/50' : 'text-white/44'}`}>
                             Any payment contribute, payout claim, or ZK-proof generation inside the phone interface is processed locally and broadcast to our emulated database indexer. The state synchronizes instantly, prompting realistic Horizon and WebSocket server logging.
                           </p>
                         </div>
                       </div>
 
                       <div className="space-y-2.5">
-                        <span className={`text-[10px] uppercase font-bold tracking-wider block ${isLight ? 'text-zinc-400' : 'text-white/40'}`}>
+                        <span className={`text-[10px] uppercase font-bold tracking-wider block ${isLight ? 'text-[#15151A]/40' : 'text-white/34'}`}>
                           Key Features to Simulate inside the App:
                         </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className={`p-3 rounded-xl border ${isLight ? 'bg-zinc-50 border-zinc-200/80' : 'bg-white/5 border-white/5'}`}>
+                        <motion.div
+                          variants={staggerContainer} initial="hidden" animate="show"
+                          className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                        >
+                          <motion.div variants={staggerItem} whileHover={{ y: -2 }} className={`p-3 rounded-xl border transition-colors hover:border-orange-500/30 ${isLight ? 'bg-[#F7F6F4] border-[#15151A]/[0.07]' : 'bg-white/5 border-white/5'}`}>
                             <span className="font-bold text-orange-500 font-mono text-xs block">01. Onboarding Flow</span>
-                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-zinc-500' : 'text-white/40'}`}>Reset the app or start onboarding to register telephone numbers and simulate WebAuthn FIDO2 passkeys on-chain.</span>
-                          </div>
-                          <div className={`p-3 rounded-xl border ${isLight ? 'bg-zinc-50 border-zinc-200/80' : 'bg-white/5 border-white/5'}`}>
+                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-[#15151A]/50' : 'text-white/44'}`}>Reset the app or start onboarding to register telephone numbers and simulate WebAuthn FIDO2 passkeys on-chain.</span>
+                          </motion.div>
+                          <motion.div variants={staggerItem} whileHover={{ y: -2 }} className={`p-3 rounded-xl border transition-colors hover:border-orange-500/30 ${isLight ? 'bg-[#F7F6F4] border-[#15151A]/[0.07]' : 'bg-white/5 border-white/5'}`}>
                             <span className="font-bold text-orange-500 font-mono text-xs block">02. SEP-24 deposits</span>
-                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-zinc-500' : 'text-white/40'}`}>Add funds by exchanging Naira (NGN) for USDC, mimicking standard local bank transfers and stellar ledger sequences.</span>
-                          </div>
-                          <div className={`p-3 rounded-xl border ${isLight ? 'bg-zinc-50 border-zinc-200/80' : 'bg-white/5 border-white/5'}`}>
+                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-[#15151A]/50' : 'text-white/44'}`}>Add funds by exchanging Naira (NGN) for USDC, mimicking standard local bank transfers and stellar ledger sequences.</span>
+                          </motion.div>
+                          <motion.div variants={staggerItem} whileHover={{ y: -2 }} className={`p-3 rounded-xl border transition-colors hover:border-orange-500/30 ${isLight ? 'bg-[#F7F6F4] border-[#15151A]/[0.07]' : 'bg-white/5 border-white/5'}`}>
                             <span className="font-bold text-orange-500 font-mono text-xs block">03. Group Contributions</span>
-                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-zinc-500' : 'text-white/40'}`}>Contribute USDC to Lagos Solar or Abuja Galaxy, update live smart contract balances, and inspect the D3 line charts.</span>
-                          </div>
-                          <div className={`p-3 rounded-xl border ${isLight ? 'bg-zinc-50 border-zinc-200/80' : 'bg-[#050505] border-white/5'}`}>
+                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-[#15151A]/50' : 'text-white/44'}`}>Contribute USDC to Lagos Solar or Abuja Galaxy, update live smart contract balances, and inspect the D3 line charts.</span>
+                          </motion.div>
+                          <motion.div variants={staggerItem} whileHover={{ y: -2 }} className={`p-3 rounded-xl border transition-colors hover:border-orange-500/30 ${isLight ? 'bg-[#F7F6F4] border-[#15151A]/[0.07]' : 'bg-[#0A0A0C] border-white/5'}`}>
                             <span className="font-bold text-orange-500 font-mono text-xs block">04. Dispute Flagging</span>
-                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-zinc-500' : 'text-white/40'}`}>Flag suspicious ledger transactions to trigger details reviews and dispute summary panels in the history views.</span>
-                          </div>
-                        </div>
+                            <span className={`text-[10px] mt-0.5 block ${isLight ? 'text-[#15151A]/50' : 'text-white/44'}`}>Flag suspicious ledger transactions to trigger details reviews and dispute summary panels in the history views.</span>
+                          </motion.div>
+                        </motion.div>
                       </div>
                     </div>
                   </div>
