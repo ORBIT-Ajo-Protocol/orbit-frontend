@@ -147,8 +147,9 @@ export default function NetworkLedger({ logs, clearLogs, theme }: NetworkLedgerP
         </div>
       </div>
 
-      {/* Log list container */}
-      <div className={`h-64 overflow-y-auto p-4 space-y-3 select-text transition-colors duration-300 ${
+      {/* Log list container — was a fixed h-64 (256px) regardless of viewport,
+          leaving most of the page empty below a small scrolling box. */}
+      <div className={`h-[65vh] min-h-[360px] overflow-y-auto p-4 space-y-3 select-text transition-colors duration-300 ${
         isLight ? 'bg-white' : 'bg-[#020202]'
       }`}>
         <AnimatePresence initial={false}>
