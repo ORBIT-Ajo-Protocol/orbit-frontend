@@ -68,6 +68,39 @@ export default function App() {
     setLogs([]);
   };
 
+  // Simulated activity heartbeat: nudges one orbit's pot balance up (capped
+  // at that round's full contribution amount, so it can't run away) and logs
+  // a matching contract event. Driving both the Ledger feed and the
+  // Dashboard's TVL/pot numbers from this one state change keeps them
+  // mutually consistent — no independently-flickering figures. Self-schedules
+  // via the `orbits` dependency rather than setInterval, so it always reads
+  // fresh state instead of a stale closure.
+  useEffect(() => {
+    const delay = 9000 + Math.random() * 5000;
+    const timeout = setTimeout(() => {
+      const candidates = orbits.filter((o) => {
+        if (o.status !== 'active') return false;
+        const activeMemberCount = o.members.filter((m) => m.status === 'active').length;
+        return o.livePotBalance < o.contributionAmount * activeMemberCount;
+      });
+      if (candidates.length === 0) return;
+
+      const target = candidates[Math.floor(Math.random() * candidates.length)];
+      const activeMemberCount = target.members.filter((m) => m.status === 'active').length;
+      const roundCap = target.contributionAmount * activeMemberCount;
+      const bump = Math.min(roundCap - target.livePotBalance, Math.round(8 + Math.random() * 17));
+      const newBalance = target.livePotBalance + bump;
+
+      setOrbits((prev) => prev.map((o) => (o.id === target.id ? { ...o, livePotBalance: newBalance } : o)));
+      addLog(
+        'contract',
+        `Contribution received: +${bump} USDC into ${target.name}`,
+        `Pot balance now ${newBalance} USDC — round ${target.currentRound} of ${target.totalRounds}.`
+      );
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [orbits]);
+
   const handleNavigateToWebVerifier = (proofLink: string) => {
     setIncomingVerifierLink(proofLink);
     setActiveView('admin-portal');
@@ -301,7 +334,15 @@ export default function App() {
                   <motion.div variants={staggerItem} whileHover={{ y: -3 }} className={`p-5.5 rounded-[14px] border transition-colors hover:shadow-lg ${isLight ? 'bg-white border-[#15151A]/[0.09]' : 'bg-[#131316] border-white/[0.08]'}`}>
                     <span className={`text-[11px] font-bold uppercase tracking-wide ${isLight ? 'text-[#15151A]/40' : 'text-white/34'}`}>Total Value Locked</span>
                     <div className="flex items-baseline gap-1.5 mt-2.5">
-                      <span className="font-display text-[28px] font-semibold">{totalValueLocked.toLocaleString()}</span>
+                      <motion.span
+                        key={totalValueLocked}
+                        initial={{ opacity: 0.3, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35 }}
+                        className="font-display text-[28px] font-semibold"
+                      >
+                        {totalValueLocked.toLocaleString()}
+                      </motion.span>
                       <span className={`text-[13px] font-bold ${isLight ? 'text-[#15151A]/60' : 'text-white/58'}`}>USDC</span>
                     </div>
                   </motion.div>
@@ -363,7 +404,15 @@ export default function App() {
                           </div>
                           <div>
                             <span className={`text-[10.5px] font-bold uppercase tracking-wide ${isLight ? 'text-[#15151A]/40' : 'text-white/34'}`}>Pot</span>
-                            <div className="text-[14px] font-bold mt-0.5 text-orange-500">{orbit.livePotBalance} USDC</div>
+                            <motion.div
+                              key={orbit.livePotBalance}
+                              initial={{ opacity: 0.3, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.35 }}
+                              className="text-[14px] font-bold mt-0.5 text-orange-500"
+                            >
+                              {orbit.livePotBalance} USDC
+                            </motion.div>
                           </div>
                         </div>
 
