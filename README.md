@@ -15,7 +15,9 @@ slashing hub, ZK proof verifier), plus a walkthrough of the protocol's four
 stages (SEP-24 anchor, Soroban ROSCA, collateral slasher, ZK reputation).
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for how all three ORBIT repos fit
-together and a detailed end-to-end workflow of the protocol.
+together and a detailed end-to-end workflow of the protocol, or
+[DEVELOPMENT.md](./DEVELOPMENT.md) for the actual development history
+across all three repos since they were first cloned.
 
 ## Status
 
